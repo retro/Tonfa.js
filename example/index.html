@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- jQuery Mobile CSS bits -->
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.min.css" />
+		<link rel="stylesheet" href="css/app.css" />
+
+		<!-- Javascript includes -->
+		<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="javascripts/lib/can.jquery.js"></script>
+		<script type="text/javascript" src="javascripts/lib/can.construct.super.js"></script>
+		<script type="text/javascript" src="javascripts/lib/can.observe.delegate.js"></script>
+		<script type="text/javascript" src="javascripts/tonfa.js"></script>
+		
+		
+	</head>
+
+	<body>
+		<div id="app-wrapper"></div>
+		<script type="text/ejs" id="loginButtonEJS">
+			<div data-role="content">
+				<div style="position: absolute; top: 50%; margin-top: -1.2em;">
+					<a href="<%= url %>" data-role="button">Login with Github</a>
+				</div>
+			</div>
+		</script>
+		<script type="text/ejs" id="loggingInEJS">
+			<div data-role="content">
+				<div style="position: absolute; top: 50%; margin-top: -1.2em;">
+					Logging you in...
+				</div>
+			</div>
+		</script>
+
+		<script type="text/ejs" id="dashboardDataEJS">
+			<div data-role="header" data-position="inline"> 
+				<img src="<%= this.user.avatar_url %>" class="header-avatar" />
+				<h1>Hello, <%= this.user.login %></h1> 
+				<a href="#!dashboard" data-icon="check">Home</a>
+			</div> 
+			<div data-role="content">
+				<h2>Latest issues</h2>
+				<div class="issues-list">
+					<%== can.view.render('issuesListEJS', this.issues) %>
+				</div>
+			</div>
+			<div data-role="footer"> 
+				<div data-role="navbar">
+					<ul>
+						<li><a href="<%= can.route.url({page: 'repos' }) %>">My Repos</a></li>
+						<li><a href="<%= can.route.url({page: 'gists' }) %>">My Gists</a></li>
+					</ul>
+				</div>
+			</div> 
+		</script>
+
+		<script type="text/ejs" id="issuesListEJS">
+			<ul data-role="listview" data-inset="true" class="issues">
+				<% list(this, function(item){ %>
+					<li <%= (el)-> el.data('issue', item).addClass('issue') %>>
+						<a href="<%= can.route.url({repo_owner: item.repoOwner(), repo_slug: item.repo(), issue_number: item.number }) %>">
+							<h3><span><%= item.repoName() %></span> - <%= item.title %></h3>
+							<p><%= item.body %></p>
+						</a>
+					</li>
+				<% }) %>
+					
+			</ul>
+		</script> 
+		<script type="text/ejs" id="reposDataEJS">
+			<div data-role="header" data-position="inline"> 
+				<img src="<%= this.user.avatar_url %>" class="header-avatar" />
+				<h1>My Repos</h1> 
+				<a data-rel="back" data-icon="check">Home</a>
+			</div> 
+			<div data-role="content">
+					<ul data-role="listview" data-inset="true" class="repos">
+						<% list(this.repos, function(repo){ %>
+							<li <%= (el)-> el.data('repo', repo) %>>
+								<a href="<%= can.route.url({page: 'repos', repo_slug: repo.slug(), repo_owner: repo.owner()}) %>">
+									<span class="ui-li-count"><%= repo.open_issues %></span>
+									<h3><%= repo.name %></h3>
+									<p><%= repo.description %></p>
+								</a>
+							</li>
+						<% }) %>
+				</ul>
+			</div>
+			<div data-role="footer"> 
+				<div data-role="navbar">
+					<ul>
+						<li><a href="<%= can.route.url({page: 'repos' }) %>">My Repos</a></li>
+						<li><a href="<%= can.route.url({page: 'gists' }) %>">My Gists</a></li>
+					</ul>
+				</div>
+			</div> 
+		</script>
+
+		<script type="text/ejs" id="repoDataEJS">
+			<div data-role="header" data-position="inline"> 
+				<img src="<%= this.user.avatar_url %>" class="header-avatar" />
+				<h1><%= this.repo.name %></h1> 
+				<a href="#!dashboard" data-icon="check">Home</a>
+			</div> 
+			<div data-role="content">
+				<p><%= this.repo.description %></p>
+				<p>Watchers: <%= this.repo.watchers %></p>
+				<% if(this.repo.has_issues && this.repo.open_issues > 0){ %>
+					<a href="<%= can.route.url({page: 'issues', repo_slug: repo.slug(), repo_owner: repo.owner()}) %>" data-role="button" class="issues">Issues for repo</a>
+				<% } %> 
+			</div>
+			<div data-role="footer"> 
+				<div data-role="navbar">
+					<ul>
+						<li><a href="<%= can.route.url({page: 'repos' }) %>">My Repos</a></li>
+						<li><a href="<%= can.route.url({page: 'gists' }) %>">My Gists</a></li>
+					</ul>
+				</div>
+			</div> 
+		</script>
+
+		<script type="text/ejs" id="issuesDataEJS">
+			<div data-role="header" data-position="inline"> 
+				<img src="<%= this.user.avatar_url %>" class="header-avatar" />
+				<h1>Issues for <%= this.repo.name %></h1> 
+				<a href="#!dashboard" data-icon="check">Home</a>
+			</div> 
+			<div data-role="content">
+				<%== can.view.render('issuesListEJS', this.issues) %>
+			</div>
+			<div data-role="footer"> 
+				<div data-role="navbar">
+					<ul>
+						<li><a href="<%= can.route.url({page: 'repos' }) %>">My Repos</a></li>
+						<li><a href="<%= can.route.url({page: 'gists' }) %>">My Gists</a></li>
+					</ul>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/ejs" id="issueDataEJS">
+			<div data-role="header" data-position="inline"> 
+				<img src="<%= this.user.avatar_url %>" class="header-avatar" />
+				<h1>Issues for <%= this.repo.name %></h1> 
+				<a href="#!dashboard" data-icon="check">Home</a>
+			</div> 
+			<div data-role="content">
+				<h1><%= this.issue.title %></h1>
+				<p><%= this.issue.body %></p>
+			</div>
+			<div data-role="footer"> 
+				<div data-role="navbar">
+					<ul>
+						<li><a href="<%= can.route.url({page: 'repos' }) %>">My Repos</a></li>
+						<li><a href="<%= can.route.url({page: 'gists' }) %>">My Gists</a></li>
+					</ul>
+				</div>
+			</div>
+		</script>
+		
+		<script type="text/javascript" src="javascripts/app.js"></script>
+		<script src="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.js"></script>
+	</body>
+</html>
